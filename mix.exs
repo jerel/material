@@ -23,7 +23,7 @@ defmodule Material.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:scenic, path: "../scenic", override: true},
+      {:scenic, github: "jerel/scenic", branch: "modal", override: true},
       {:scenic_driver_glfw, "~> 0.10"},
 
       # These deps are optional and are included as they are often used.

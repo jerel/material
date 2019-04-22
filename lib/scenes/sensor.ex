@@ -4,6 +4,7 @@ defmodule Material.Scene.Sensor do
   alias Scenic.Graph
   alias Scenic.ViewPort
   alias Scenic.Sensor
+  alias Scenic.Component.Modal
 
   import Scenic.Primitives
   import Scenic.Components
@@ -19,6 +20,11 @@ defmodule Material.Scene.Sensor do
     \"Sensor\" is a simple scene that displays data from a simulated sensor.
     The sensor is in /lib/sensors/temperature and uses Scenic.Sensor
     The buttons are placeholders showing custom alignment.
+  """
+
+  @maintenance_text """
+  Switching to maintenance mode will engage the secondary
+  power bus and initiate hibernation sequence.
   """
 
   @moduledoc """
@@ -58,6 +64,7 @@ defmodule Material.Scene.Sensor do
               |> button("Calibrate", width: col * 4, height: 46, theme: :primary)
               |> button(
                 "Maintenance",
+                id: :open_maintenance_modal,
                 width: col * 2 - 6,
                 height: 46,
                 theme: :secondary,
@@ -86,6 +93,32 @@ defmodule Material.Scene.Sensor do
     Sensor.subscribe(:temperature)
 
     {:ok, graph, push: graph}
+  end
+
+  def filter_event({:click, :open_settings_modal}, _, graph) do
+    graph = Modal.open(graph, {Material.Component.Notes, "Test"}, size: {0.80, 0.80})
+
+    {:noreply, graph}
+  end
+
+  def filter_event({:click, :open_maintenance_modal}, _, graph) do
+    maintenance = fn graph ->
+      graph
+      |> text("Enter maintenance mode?", translate: {20, 40}, fill: {0, 0, 0}, font_size: 26)
+      |> text(@maintenance_text, translate: {20, 90}, fill: {0, 0, 0}, font_size: 18)
+      |> button("CANCEL", id: :dismiss_modal, translate: {270, 150}, theme: :text)
+      |> button("OK", id: :proceed, translate: {385, 150}, theme: :text)
+    end
+
+    # percentage sizing
+    # {:noreply, Modal.open(graph, maintenance, size: {0.80, 0.60})}
+    {:noreply, Modal.open(graph, maintenance, size: {450, 200})}
+  end
+
+  def filter_event({:modal, {:click, :dismiss_modal}}, _, graph) do
+    graph = Modal.dismiss(graph)
+
+    {:halt, graph, push: graph}
   end
 
   # --------------------------------------------------------
